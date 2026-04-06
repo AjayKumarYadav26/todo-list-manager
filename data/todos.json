@@ -1,0 +1,34 @@
+{
+  "todos": [
+    {
+      "id": "64afd7a1-ef1e-4758-b892-9d6feb2990c3",
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread",
+      "status": "pending",
+      "priority": "high",
+      "category": "Shopping",
+      "due_date": "2026-04-08",
+      "created_at": "2026-04-06T10:54:42.611413",
+      "updated_at": "2026-04-06T10:54:42.611413",
+      "completed_at": null
+    },
+    {
+      "id": "b3280ce4-fe36-4e8d-b4dd-9f48ec182e0c",
+      "title": "Finish project report",
+      "description": "",
+      "status": "pending",
+      "priority": "medium",
+      "category": "Work",
+      "due_date": "2026-04-12",
+      "created_at": "2026-04-06T10:54:42.895046",
+      "updated_at": "2026-04-06T10:54:42.895046",
+      "completed_at": null
+    }
+  ],
+  "categories": [
+    "Work",
+    "Personal",
+    "Shopping",
+    "Health"
+  ]
+}
