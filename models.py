@@ -121,7 +121,7 @@ def sort_todos(todos: list, sort_by: str = "created_at", sort_order: str = "desc
 
     if sort_by == "priority":
         key = lambda t: PRIORITY_ORDER.get(t.get("priority", "medium"), 1)
-        reverse = not reverse  # high priority (0) should come first in "desc"
+        reverse = not reverse
     elif sort_by == "status":
         key = lambda t: STATUS_ORDER.get(t.get("status", "pending"), 0)
     elif sort_by == "due_date":
