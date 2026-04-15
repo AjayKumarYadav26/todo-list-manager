@@ -1,11 +1,15 @@
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 
 VALID_STATUSES = ("pending", "in_progress", "completed")
 VALID_PRIORITIES = ("high", "medium", "low")
 PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 STATUS_ORDER = {"pending": 0, "in_progress": 1, "completed": 2}
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def create_todo(data: dict) -> dict:
@@ -26,7 +30,7 @@ def create_todo(data: dict) -> dict:
         except (ValueError, TypeError):
             raise ValueError("Due date must be in YYYY-MM-DD format")
 
-    now = datetime.utcnow().isoformat()
+    now = _utc_now_iso()
     return {
         "id": str(uuid.uuid4()),
         "title": title,
@@ -80,11 +84,11 @@ def validate_update(data: dict) -> dict:
     if not cleaned:
         raise ValueError("No valid fields to update")
 
-    cleaned["updated_at"] = datetime.utcnow().isoformat()
+    cleaned["updated_at"] = _utc_now_iso()
 
     if "status" in cleaned:
         if cleaned["status"] == "completed":
-            cleaned["completed_at"] = datetime.utcnow().isoformat()
+            cleaned["completed_at"] = _utc_now_iso()
         else:
             cleaned["completed_at"] = None
 
