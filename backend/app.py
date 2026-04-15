@@ -5,17 +5,18 @@ app = Flask(__name__)
 
 @app.route('/todos/<id>/tags', methods=['POST'])
 def add_tags(id):
-    todo = load_todos().get(id)
+    todos = load_todos()
+    todo = next((todo for todo in todos if todo['id'] == id), None)
     if not todo:
         return jsonify({'error': 'Todo not found'}), 404
     tags = request.json.get('tags', [])
     todo['tags'] = list(set(todo.get('tags', []) + tags))  # Add new tags and avoid duplicates
-    save_todos()
+    save_todos(todos)
     return jsonify(todo), 200
 
 @app.route('/todos/tags', methods=['GET'])
 def get_tags():
-    todos = load_todos().values()
+    todos = load_todos()
     tag_counts = {}
     for todo in todos:
         for tag in todo.get('tags', []):
@@ -25,6 +26,6 @@ def get_tags():
 @app.route('/todos', methods=['GET'])
 def filter_todos_by_tag():
     tag = request.args.get('tag')
-    todos = load_todos().values()
+    todos = load_todos()
     filtered_todos = [todo for todo in todos if tag in todo.get('tags', [])]
     return jsonify(filtered_todos), 200
