@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from storage import StorageManager
-from models import create_todo, validate_update, compute_stats, matches_filters, sort_todos
+from models import create_todo, validate_update, compute_stats, matches_filters, sort_todos, popular_tags
 
 app = Flask(__name__)
 store = StorageManager()
@@ -19,6 +19,7 @@ def list_todos():
         "status": request.args.get("status"),
         "priority": request.args.get("priority"),
         "category": request.args.get("category"),
+        "tag": request.args.get("tag"),
         "search": request.args.get("search"),
     }
     filters = {k: v for k, v in filters.items() if v}
@@ -111,6 +112,11 @@ def bulk_delete():
 @app.route("/api/categories", methods=["GET"])
 def list_categories():
     return jsonify(store.get_categories())
+
+
+@app.route("/api/tags/popular", methods=["GET"])
+def list_popular_tags():
+    return jsonify(popular_tags(store.get_all_todos()))
 
 
 @app.route("/api/stats", methods=["GET"])
