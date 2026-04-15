@@ -245,6 +245,7 @@ function renderTodoList() {
 function renderTodoCard(todo) {
     const isCompleted = todo.status === "completed";
     const dueBadge = getDueBadge(todo);
+    const createdAtBadge = getCreatedAtBadge(todo);
     const statusLabel = {
         pending: "Pending",
         in_progress: "In Progress",
@@ -268,6 +269,7 @@ function renderTodoCard(todo) {
                 ${todo.category ? `<span class="badge badge-category">${escapeHtml(todo.category)}</span>` : ""}
                 ${dueBadge}
             </div>
+            ${createdAtBadge}
             ${!isCompleted ? `
             <div class="status-btn-group" style="margin-top:0.5rem;">
                 <button class="status-btn ${todo.status === 'pending' ? 'active' : ''}"
@@ -304,6 +306,23 @@ function getDueBadge(todo) {
         return `<span class="badge badge-due" style="color:var(--warning)">Due in ${diffDays} day${diffDays !== 1 ? "s" : ""}</span>`;
     }
     return `<span class="badge badge-due">${todo.due_date}</span>`;
+}
+
+function getCreatedAtBadge(todo) {
+    if (!todo.created_at) return "";
+    return `<div class="todo-created-at">Created on: ${formatCreatedAt(todo.created_at)}</div>`;
+}
+
+function formatCreatedAt(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return escapeHtml(value);
+    return new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    }).format(date);
 }
 
 function renderStats() {
