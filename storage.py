@@ -17,11 +17,22 @@ class StorageManager:
         self._data = None
         self._load()
 
+    def _normalize_todo(self, todo: dict) -> dict:
+        normalized = dict(todo)
+        normalized.setdefault("tags", [])
+        if not isinstance(normalized["tags"], list):
+            normalized["tags"] = []
+        normalized["tags"] = [str(tag).strip() for tag in normalized["tags"] if str(tag).strip()]
+        return normalized
+
     def _load(self):
         if os.path.exists(self.filepath):
             try:
                 with open(self.filepath, "r", encoding="utf-8") as f:
                     self._data = json.load(f)
+                self._data.setdefault("todos", [])
+                self._data.setdefault("categories", list(DEFAULT_DATA["categories"]))
+                self._data["todos"] = [self._normalize_todo(todo) for todo in self._data.get("todos", [])]
             except (json.JSONDecodeError, IOError):
                 self._data = {**DEFAULT_DATA}
                 self._save()
@@ -44,7 +55,7 @@ class StorageManager:
 
     def get_all_todos(self) -> list:
         with self._lock:
-            return list(self._data.get("todos", []))
+            return [dict(t) for t in self._data.get("todos", [])]
 
     def get_todo(self, todo_id: str) -> dict | None:
         with self._lock:
@@ -55,6 +66,7 @@ class StorageManager:
 
     def add_todo(self, todo: dict) -> dict:
         with self._lock:
+            todo = self._normalize_todo(todo)
             self._data["todos"].append(todo)
             if todo.get("category"):
                 self._ensure_category(todo["category"])
@@ -65,6 +77,9 @@ class StorageManager:
         with self._lock:
             for t in self._data["todos"]:
                 if t["id"] == todo_id:
+                    if "tags" in updates:
+                        updates = dict(updates)
+                        updates["tags"] = [str(tag).strip() for tag in updates.get("tags", []) if str(tag).strip()]
                     t.update(updates)
                     if "category" in updates and updates["category"]:
                         self._ensure_category(updates["category"])
