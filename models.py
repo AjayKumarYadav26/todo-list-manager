@@ -8,6 +8,23 @@ PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 STATUS_ORDER = {"pending": 0, "in_progress": 1, "completed": 2}
 
 
+def _normalize_tags(tags):
+    if tags is None:
+        return []
+    if isinstance(tags, str):
+        tags = [tags]
+    if not isinstance(tags, list):
+        raise ValueError("Tags must be a list of strings")
+    normalized = []
+    seen = set()
+    for tag in tags:
+        value = str(tag).strip()
+        if value and value.lower() not in seen:
+            seen.add(value.lower())
+            normalized.append(value)
+    return normalized
+
+
 def create_todo(data: dict) -> dict:
     title = (data.get("title") or "").strip()
     if not title:
@@ -34,6 +51,7 @@ def create_todo(data: dict) -> dict:
         "status": "pending",
         "priority": priority,
         "category": (data.get("category") or "").strip(),
+        "tags": _normalize_tags(data.get("tags", [])),
         "due_date": due_date,
         "created_at": now,
         "updated_at": now,
@@ -67,6 +85,9 @@ def validate_update(data: dict) -> dict:
 
     if "category" in data:
         cleaned["category"] = (data["category"] or "").strip()
+
+    if "tags" in data:
+        cleaned["tags"] = _normalize_tags(data["tags"])
 
     if "due_date" in data:
         due_date = data["due_date"] or None
@@ -106,6 +127,12 @@ def matches_filters(todo: dict, filters: dict) -> bool:
         if todo.get("category", "").lower() != filters["category"].lower():
             return False
 
+    if "tag" in filters and filters["tag"]:
+        wanted = filters["tag"].strip().lower()
+        tags = [t.lower() for t in todo.get("tags", [])]
+        if wanted not in tags:
+            return False
+
     if "search" in filters and filters["search"]:
         query = filters["search"].lower()
         title = (todo.get("title") or "").lower()
@@ -121,7 +148,7 @@ def sort_todos(todos: list, sort_by: str = "created_at", sort_order: str = "desc
 
     if sort_by == "priority":
         key = lambda t: PRIORITY_ORDER.get(t.get("priority", "medium"), 1)
-        reverse = not reverse  # high priority (0) should come first in "desc"
+        reverse = not reverse
     elif sort_by == "status":
         key = lambda t: STATUS_ORDER.get(t.get("status", "pending"), 0)
     elif sort_by == "due_date":
@@ -187,3 +214,12 @@ def compute_stats(todos: list) -> dict:
         "completed_today": completed_today,
         "created_this_week": created_this_week,
     }
+
+def popular_tags(todos: list) -> list:
+    counts = {}
+    for todo in todos:
+        for tag in todo.get("tags", []):
+            normalized = str(tag).strip()
+            if normalized:
+                counts[normalized] = counts.get(normalized, 0) + 1
+    return [{"tag": tag, "count": count} for tag, count in sorted(counts.items(), key=lambda item: (-item[1], item[0].lower()))]
