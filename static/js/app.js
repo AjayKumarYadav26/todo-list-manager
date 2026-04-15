@@ -268,6 +268,7 @@ function renderTodoCard(todo) {
                 ${todo.category ? `<span class="badge badge-category">${escapeHtml(todo.category)}</span>` : ""}
                 ${dueBadge}
             </div>
+            <div class="todo-timestamp">Created ${formatTimestamp(todo.created_at)}</div>
             ${!isCompleted ? `
             <div class="status-btn-group" style="margin-top:0.5rem;">
                 <button class="status-btn ${todo.status === 'pending' ? 'active' : ''}"
@@ -373,4 +374,14 @@ function escapeHtml(str) {
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatTimestamp(value) {
+    if (!value) return "Unknown";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+    }).format(date);
 }
